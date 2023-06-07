@@ -22,6 +22,8 @@ extern"C"{
 #include "pico_uart_transports.h"
 }
 
+#include "Servo.h"
+
 const uint NUM_SERVOS = 2;
 
 const uint LED_PIN = 14;
@@ -45,14 +47,15 @@ rclc_support_t support;
 rclc_executor_t executor;
 
 
-float servo_current[NUM_SERVOS] = {1.571, 1.571};
+Servo servo_device[NUM_SERVOS];
+
 
 const char * servo_target_topic_name = "servo_target";
 rcl_subscription_t servo_sub;
 
 void subscription_callback(const void * msgin){
     const ros2_servo__msg__Servo * msg = (const ros2_servo__msg__Servo *)msgin;
-    servo_current[msg->servo] = msg->radians;
+    servo_device[msg->servo].goRad(msg->radians);
 }
 
 
@@ -61,7 +64,7 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time){
 
 	for (uint8_t i = 0; i < NUM_SERVOS; i++){
 		servo_msg.servo = i;
-		servo_msg.radians = servo_current[i];
+		servo_msg.radians = servo_device[i].getRad();
 		rcl_ret_t ret = rcl_publish(&servo_pub, &servo_msg, NULL);
 	}
 
@@ -129,10 +132,23 @@ void destroyEntities(){
 }
 
 
+void init_servos(){
+
+	servo_device[0].setGP(2);
+	servo_device[1].setGP(3);
+
+	for (uint8_t i = 0 ; i < NUM_SERVOS; i++){
+		servo_device[i].goRad(1.51);
+	}
+
+}
+
+
 
 int main()
 {
 	stdio_init_all();
+	init_servos();
 
     rmw_uros_set_custom_transport(
 		true,

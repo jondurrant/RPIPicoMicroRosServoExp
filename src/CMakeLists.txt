@@ -1,14 +1,14 @@
 add_executable(${NAME}
         main.cpp
         pico_uart_transport.c
+        Servo.cpp
         )
 
 # Pull in our pico_stdlib which pulls in commonly used features
 target_link_libraries(${NAME} 
 	 pico_stdlib
      micro_ros
-     hardware_adc
-     pico_unique_id
+     hardware_pwm
 	)
 	
 target_include_directories(${NAME} PRIVATE
