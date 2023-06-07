@@ -27,8 +27,9 @@ const uint NUM_SERVOS = 2;
 const uint LED_PIN = 14;
 const uint PULSE_LED = 15;
 
-rcl_publisher_t servoPub;
-ros2_servo__msg__Servo servoMsg;
+rcl_publisher_t servo_pub;
+ros2_servo__msg__Servo servo_msg;
+ros2_servo__msg__Servo servo_target_msg;
 
 enum states {
   WAITING_AGENT,
@@ -44,13 +45,24 @@ rclc_support_t support;
 rclc_executor_t executor;
 
 
+float servo_current[NUM_SERVOS] = {1.571, 1.571};
+
+const char * servo_target_topic_name = "servo_target";
+rcl_subscription_t servo_sub;
+
+void subscription_callback(const void * msgin){
+    const ros2_servo__msg__Servo * msg = (const ros2_servo__msg__Servo *)msgin;
+    servo_current[msg->servo] = msg->radians;
+}
+
+
 
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time){
 
 	for (uint8_t i = 0; i < NUM_SERVOS; i++){
-		servoMsg.servo = i;
-		servoMsg.radians = 1.571;
-		rcl_ret_t ret = rcl_publish(&servoPub, &servoMsg, NULL);
+		servo_msg.servo = i;
+		servo_msg.radians = servo_current[i];
+		rcl_ret_t ret = rcl_publish(&servo_pub, &servo_msg, NULL);
 	}
 
 }
@@ -79,7 +91,7 @@ void createEntities(){
 	rclc_node_init_default(&node, "pico_node", "", &support);
 
 	rclc_publisher_init_default(
-			&servoPub,
+			&servo_pub,
 			&node,
 			ROSIDL_GET_MSG_TYPE_SUPPORT(ros2_servo, msg, Servo),
 			"servo_current");
@@ -90,15 +102,26 @@ void createEntities(){
 		RCL_MS_TO_NS(1000),
 		timer_callback);
 
-	rclc_executor_init(&executor, &support.context, 1, &allocator);
+	const rosidl_message_type_support_t * type_support =
+	    ROSIDL_GET_MSG_TYPE_SUPPORT(ros2_servo, msg, Servo);
+	rclc_subscription_init_default(
+	        &servo_sub,
+	        &node,
+	        type_support,
+	        servo_target_topic_name);
+
+	rclc_executor_init(&executor, &support.context, 2, &allocator);
 	rclc_executor_add_timer(&executor, &timer);
+
+	rclc_executor_add_subscription(&executor, &servo_sub, &servo_target_msg, &subscription_callback, ON_NEW_DATA);
 }
 
 void destroyEntities(){
 	rmw_context_t * rmw_context = rcl_context_get_rmw_context(&support.context);
 	(void) rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
 
-	rcl_publisher_fini(&servoPub, &node);
+	rcl_publisher_fini(&servo_pub, &node);
+	rcl_subscription_fini(&servo_sub, &node);
 	rcl_timer_fini(&timer);
 	rclc_executor_fini(&executor);
 	rcl_node_fini(&node);
