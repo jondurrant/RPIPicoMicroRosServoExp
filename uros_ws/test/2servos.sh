@@ -10,7 +10,7 @@ do
   ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 1, radians: 1.5}'
   
   #Left
-  ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 0, radians: 0.0}'
+  ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 0, radians: 0.3}'
   ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 1, radians: 1.0}' 
   ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 1, radians: 1.5}'
   
@@ -20,7 +20,7 @@ do
   ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 1, radians: 1.5}'
   
   #Right
-  ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 0, radians: 1.8}'
+  ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 0, radians: 1.6}'
   ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 1, radians: 1.0}' 
   ros2 topic pub -1 /servo_target ros2_servo/msg/Servo '{servo: 1, radians: 1.5}'
   

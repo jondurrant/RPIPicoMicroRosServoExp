@@ -116,7 +116,11 @@ void createEntities(){
 	rclc_executor_init(&executor, &support.context, 2, &allocator);
 	rclc_executor_add_timer(&executor, &timer);
 
-	rclc_executor_add_subscription(&executor, &servo_sub, &servo_target_msg, &subscription_callback, ON_NEW_DATA);
+	rclc_executor_add_subscription(&executor,
+			&servo_sub,
+			&servo_target_msg,
+			&subscription_callback,
+			ON_NEW_DATA);
 }
 
 void destroyEntities(){
